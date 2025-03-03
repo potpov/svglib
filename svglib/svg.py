@@ -535,7 +535,12 @@ class SVG:
         return self
 
     def bbox(self):
-        return union_bbox([path_group.bbox() for path_group in self.svg_path_groups])
+        """
+        Returns the bounding box that wraps all the shapes of SVG
+        """
+        points = self.to_points()
+        (x1, y1), (x2, y2) = np.min(points, axis=0), np.max(points, axis=0)
+        return (x1, y1), (x2, y2)
 
     def overlap_graph(self, threshold=0.95, draw=False):
         G = nx.DiGraph()
