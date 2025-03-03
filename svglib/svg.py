@@ -140,8 +140,31 @@ class SVG:
             for x in svg_dom.getElementsByTagName(tag):
                 svg_path_groups.append(Primitive.from_xml(x))
 
+        svg_path_groups = SVGPathGroup(svg_path_groups)
         return SVG(svg_path_groups, view_box, width=width, height=height)
 
+    @staticmethod
+    def from_tensor(tensor: torch.Tensor, viewbox: Bbox = None, allow_empty=False):
+        if viewbox is None:
+            viewbox = Bbox(24)
+
+        svg = SVG(
+                SVGPathGroup(
+                    [SVGPath.from_tensor(tensor, allow_empty=allow_empty)]
+                ), viewbox=viewbox)
+        return svg
+
+    @staticmethod
+    def from_tensors(tensors: List[torch.Tensor], fill_list:List[int], viewbox: Bbox = None, allow_empty=False):
+        if viewbox is None:
+            viewbox = Bbox(24)
+
+        svg = SVG(
+            SVGPathGroup(
+                [SVGPath.from_tensor(t, allow_empty=allow_empty, fill_mode=fill_list[idx]) for idx, t in enumerate(tensors)]
+            ), viewbox=viewbox)
+        return svg
+    
     def to_tensor(self, concat_groups=True, PAD_VAL=-1):
         group_tensors = [p.to_tensor(PAD_VAL=PAD_VAL) for p in self.svg_path_groups]
 
@@ -152,22 +175,6 @@ class SVG:
 
     def to_fillings(self):
         return [p.path.filling for p in self.svg_path_groups]
-
-    @staticmethod
-    def from_tensor(tensor: torch.Tensor, viewbox: Bbox = None, allow_empty=False):
-        if viewbox is None:
-            viewbox = Bbox(24)
-
-        svg = SVG([SVGPath.from_tensor(tensor, allow_empty=allow_empty)], viewbox=viewbox)
-        return svg
-
-    @staticmethod
-    def from_tensors(tensors: List[torch.Tensor], fill_list:List[int], viewbox: Bbox = None, allow_empty=False):
-        if viewbox is None:
-            viewbox = Bbox(24)
-
-        svg = SVG([SVGPath.from_tensor(t, allow_empty=allow_empty, fill_mode=fill_list[idx]) for idx, t in enumerate(tensors)], viewbox=viewbox)
-        return svg
 
     def save_svg(self, file_path):
         with open(file_path, "w") as f:
