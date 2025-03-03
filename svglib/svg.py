@@ -2,7 +2,7 @@ from __future__ import annotations
 from .geom import *
 from xml.dom import expatbuilder
 import torch
-from typing import List, Union
+from typing import List, Union, Tuple
 import IPython.display as ipd
 import cairosvg
 from PIL import Image
@@ -22,8 +22,11 @@ from .geom import union_bbox
 
 
 class SVG:
-    def __init__(self, svg_path_groups: List[SVGPathGroup], viewbox: Bbox = Bbox(24), width: int = 200, height: int = 200):
+    def __init__(self, svg_path_groups: List[SVGPathGroup], viewbox: Bbox | tuple = Bbox(24), width: int = 200, height: int = 200):
         
+        if isinstance(viewbox, tuple):
+            viewbox = Bbox(*viewbox)
+            
         self.width = width
         self.height = height
         self.viewbox = viewbox
