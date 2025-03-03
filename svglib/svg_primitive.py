@@ -10,6 +10,7 @@ import shapely
 import shapely.ops
 import shapely.geometry
 import networkx as nx
+import copy
 
 
 FLOAT_RE = re.compile(r"[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?")
@@ -58,7 +59,7 @@ class SVGPrimitive:
         raise NotImplementedError
 
     def copy(self):
-        raise NotImplementedError
+        return copy.deepcopy(self)
 
     def bbox(self):
         raise NotImplementedError
