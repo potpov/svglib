@@ -597,7 +597,7 @@ class SVG:
         return SVG(path_groups)
 
     def to_points(self, sort=True):
-        points = np.concatenate([path_group.to_points() for path_group in self.svg_path_groups])
+        points = np.concatenate([path_group.to_path().to_points() for path_group in self.svg_path_groups])
 
         if sort:
             ind = np.lexsort((points[:, 0], points[:, 1]))
