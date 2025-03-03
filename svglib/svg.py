@@ -26,7 +26,7 @@ class SVG:
         
         if isinstance(viewbox, tuple):
             viewbox = Bbox(*viewbox)
-            
+
         self.width = width
         self.height = height
         self.viewbox = viewbox
@@ -295,7 +295,7 @@ class SVG:
 
         return self
 
-    def zoom(self, factor, center: Point = None):
+    def scale(self, factor: float | tuple[float, float], center: Point = None):
         """
         inplace modification
         """

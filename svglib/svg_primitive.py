@@ -187,7 +187,9 @@ class SVGLine(SVGPrimitive):
         self.end_pos += vec
         return self
     
-    def scale(self, factor: float):
+    def scale(self, factor: float | tuple[float, float]):
+        if isinstance(factor, tuple):
+            factor = Point(*factor)
         self.start_pos = self.start_pos * factor
         self.end_pos = self.end_pos * factor
         return self
