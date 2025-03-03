@@ -70,7 +70,12 @@ class SVG:
         return self.svg_path_groups[-1].end_pos
 
     def copy(self):
-        return SVG([svg_path_group.copy() for svg_path_group in self.svg_path_groups], self.viewbox.copy())
+        return SVG(
+            [svg_path_group.copy() for svg_path_group in self.svg_path_groups],
+            viewbox=self.viewbox.copy(),
+            width=self.width,
+            height=self.height
+        )
 
     @staticmethod
     def load_svg(file_path):
