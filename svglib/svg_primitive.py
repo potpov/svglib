@@ -20,13 +20,24 @@ def extract_args(args):
     return list(map(float, FLOAT_RE.findall(args)))
 
 
+def extract_fill(x):
+        # if we do not fill and we have no stroke color, we outline it in black
+        if not x.hasAttribute("fill"):
+            fill = None  # none
+            stroke_color = "black" if not x.hasAttribute("stroke") else x.getAttribute("stroke")
+        else:
+            fill = x.getAttribute("fill")
+            stroke_color = None if not x.hasAttribute("stroke") else x.getAttribute('stroke')
+        return fill, stroke_color
+
+
 class SVGPrimitive:
     """
     Reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Basic_Shapes
     """
-    def __init__(self, stroke_color="black", filling_color="none", dasharray=None, stroke_width="1.0", opacity=1., transf_matrix=None):
+    def __init__(self, stroke_color="black", fill="none", dasharray=None, stroke_width="1.0", opacity=1., transf_matrix=None):
         self.stroke_color = stroke_color
-        self.filling_color = filling_color
+        self.fill = fill
         self.dasharray = dasharray
         self.stroke_width = stroke_width
         self.opacity = opacity
@@ -34,7 +45,7 @@ class SVGPrimitive:
 
     def _get_fill_attr(self):
         stroke_string = f'stroke-width="{self.stroke_width}"' if self.stroke_width else ''
-        fill_string = f'fill="{self.filling_color}"' if self.filling_color else ''
+        fill_string = f'fill="{self.fill}"' if self.fill else ''
         opacity_string = f'opacity="{self.opacity}"' if self.opacity != 1. else ''
         stroke_color_string = f'stroke="{self.stroke_color}"' if self.stroke_color else ''
         dash_string = f'stroke-dasharray="{self.dasharray}"' if self.dasharray else ''
@@ -88,11 +99,10 @@ class SVGEllipse(SVGPrimitive):
 
     @classmethod
     def from_xml(_, x: minidom.Element):
-        fill = not x.hasAttribute("fill") or not x.getAttribute("fill") == "none"
-
+        fill, stroke_color = extract_fill(x)
         center = Point(float(x.getAttribute("cx")), float(x.getAttribute("cy")))
         radius = Radius(float(x.getAttribute("rx")), float(x.getAttribute("ry")))
-        return SVGEllipse(center, radius, fill=fill)
+        return SVGEllipse(center, radius, fill=fill, stroke_color=stroke_color)
 
     def to_path(self):
         p0, p1 = self.center + self.radius.xproj(), self.center + self.radius.yproj()
@@ -119,11 +129,13 @@ class SVGCircle(SVGEllipse):
 
     @classmethod
     def from_xml(_, x: minidom.Element):
-        fill = not x.hasAttribute("fill") or not x.getAttribute("fill") == "none"
+
+        # if we do not fill and we have no stroke color, we outline it in black
+        fill, stroke_color = extract_fill(x)
 
         center = Point(float(x.getAttribute("cx")), float(x.getAttribute("cy")))
         radius = Radius(float(x.getAttribute("r")))
-        return SVGCircle(center, radius, fill=fill)
+        return SVGCircle(center, radius, fill=fill, stroke_color=stroke_color)
 
 
 class SVGRectangle(SVGPrimitive):
@@ -142,7 +154,7 @@ class SVGRectangle(SVGPrimitive):
 
     @classmethod
     def from_xml(_, x: minidom.Element):
-        fill = not x.hasAttribute("fill") or not x.getAttribute("fill") == "none"
+        fill, stroke_color = extract_fill(x)
 
         xy = Point(0.)
         if x.hasAttribute("x"):
@@ -150,7 +162,7 @@ class SVGRectangle(SVGPrimitive):
         if x.hasAttribute("y"):
             xy.pos[1] = float(x.getAttribute("y"))
         wh = Size(float(x.getAttribute("width")), float(x.getAttribute("height")))
-        return SVGRectangle(xy, wh, fill=fill)
+        return SVGRectangle(xy, wh, fill=fill, stroke_color=stroke_color)
 
     def to_path(self):
         p0, p1, p2, p3 = self.xy, self.xy + self.wh.xproj(), self.xy + self.wh, self.xy + self.wh.yproj()
@@ -179,11 +191,11 @@ class SVGLine(SVGPrimitive):
 
     @classmethod
     def from_xml(_, x: minidom.Element):
-        fill = x.hasAttribute("fill") and not x.getAttribute("fill") == "none"
+        fill, stroke_color = extract_fill(x)
 
         start_pos = Point(float(x.getAttribute("x1") or 0.), float(x.getAttribute("y1") or 0.))
         end_pos = Point(float(x.getAttribute("x2") or 0.), float(x.getAttribute("y2") or 0.))
-        return SVGLine(start_pos, end_pos, fill=fill)
+        return SVGLine(start_pos, end_pos, fill=fill, stroke_color=stroke_color)
 
     def translate(self, vec: Point):
         self.start_pos += vec
@@ -216,12 +228,12 @@ class SVGPolyline(SVGPrimitive):
 
     @classmethod
     def from_xml(cls, x: minidom.Element):
-        fill = not x.hasAttribute("fill") or not x.getAttribute("fill") == "none"
+        fill, stroke_color = extract_fill(x)
 
         args = extract_args(x.getAttribute("points"))
         assert len(args) % 2 == 0, f"Expected even number of arguments for SVGPolyline: {len(args)} given"
         points = [Point(x, args[2*i+1]) for i, x in enumerate(args[::2])]
-        return cls(points, fill=fill)
+        return cls(points,  fill=fill, stroke_color=stroke_color)
 
     def to_path(self):
         commands = [SVGCommandLine(p1, p2) for p1, p2 in zip(self.points[:-1], self.points[1:])]
@@ -320,7 +332,7 @@ class SVGPathGroup(SVGPrimitive):
         fill_attr = self._get_fill_attr()
         transf = self._get_transf_attr()
         marker_attr = 'marker-start="url(#arrow)"' if with_markers else ''
-        return '<path {} {} filling="{}" d="{}" {}></path>'.format(fill_attr, marker_attr, self.path.filling,
+        return '<path {} {} fill="{}" d="{}" {}></path>'.format(fill_attr, marker_attr, self.path.fill,
                                                    " ".join(svg_path.to_str() for svg_path in self.svg_paths), transf)
 
     def to_tensor(self, PAD_VAL=-1):
@@ -415,7 +427,7 @@ class SVGPathGroup(SVGPrimitive):
     def to_shapely(self):
         return shapely.ops.unary_union([path.to_shapely() for path in self.svg_paths])
 
-    def compute_filling(self):
+    def compute_fill(self):
         if self.fill:
             G = self.overlap_graph()
 
@@ -431,7 +443,7 @@ class SVGPathGroup(SVGPrimitive):
                     visited = set()
                     neighbors = set()
                     for d, n in current:
-                        self.svg_paths[n].set_filling(d != 0)
+                        self.svg_paths[n].set_fill(d != 0)
 
                         for n2 in G.neighbors(n):
                             if not n2 in visited:
