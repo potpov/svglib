@@ -97,6 +97,16 @@ class SVGEllipse(SVGPrimitive):
         fill_attr = self._get_fill_attr()
         return f'<ellipse {fill_attr} cx="{self.center.x}" cy="{self.center.y}" rx="{self.radius.x}" ry="{self.radius.y}"/>'
 
+    def translate(self, vec: Point):
+        self.center += vec
+        return self
+    
+    def scale(self, factor: float | tuple[float, float]):
+        if isinstance(factor, tuple):
+            factor = Point(*factor)
+        self.radius = self.radius * factor
+        return self
+    
     @classmethod
     def from_xml(_, x: minidom.Element):
         fill, stroke_color = extract_fill(x)
