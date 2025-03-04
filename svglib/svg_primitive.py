@@ -30,8 +30,6 @@ class SVGPrimitive:
         self.dasharray = dasharray
         self.stroke_width = stroke_width
         self.opacity = opacity
-
-        
         self.transf_matrix = transf_matrix
 
     def _get_fill_attr(self):
