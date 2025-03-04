@@ -100,7 +100,12 @@ class SVGCommand:
             elif cmd is SVGCmdEnum.CUBIC_BEZIER:
                 cmd_parsed = SVGCommandBezier(pos, *args)
             elif cmd is SVGCmdEnum.QUAD_BEZIER:
-                cmd_parsed = SVGCommandBezier(pos, args[0], args[0], args[1])
+                qp0, qp1, qp2 = pos, args[0], args[1]
+                cp0 = qp0
+                cp3 = qp2
+                cp1 = qp0 + 2/3 * (qp1 - qp0)
+                cp2 = qp2 + 2/3 * (qp1 - qp2)
+                cmd_parsed = SVGCommandBezier(cp0, cp1, cp2, cp3)
             elif cmd is SVGCmdEnum.QUAD_BEZIER_REFL or cmd is SVGCmdEnum.CUBIC_BEZIER_REFL:
                 if isinstance(prev_command, SVGCommandBezier):
                     control1 = pos * 2 - prev_command.control2
