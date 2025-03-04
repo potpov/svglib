@@ -15,8 +15,8 @@ Handy library to manipulate SVG files in Python. Extension of the original svgli
 
 |              | Line | Quadratic | Cubic | Rect | Circle | Ellipse |
 |--------------|------|-----------|-------|------|--------|---------|
-| shift        | ✅    | ⌛         | ⌛     | ⌛    | ✅      | ✅       |
-| scale        | ✅    | ⌛         | ⌛     | ⌛    | ✅      | ✅       |
+| shift        | ✅    | ⌛         | ⌛     | ✅    | ✅      | ✅       |
+| scale        | ✅    | ⌛         | ⌛     | ✅    | ✅      | ✅       |
 | bounding box | ✅    | 🚫         | 🚫     | 🚫    | 🚫      | 🚫       |
 | copy         | ✅    | 🚫         | 🚫     | 🚫    | 🚫      | 🚫       |
 

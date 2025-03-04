@@ -130,6 +130,16 @@ class SVGCircle(SVGEllipse):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    def translate(self, vec: Point):
+        self.center += vec
+        return self
+    
+    def scale(self, factor: float | tuple[float, float]):
+        if isinstance(factor, tuple):
+            factor = min(factor)
+        self.radius = self.radius * factor
+        return self
+    
     def __repr__(self):
         return f'SVGCircle(c={self.center} r={self.radius})'
 
@@ -152,12 +162,28 @@ class SVGRectangle(SVGPrimitive):
     def __init__(self, xy: Point, wh: Size, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.xy = xy
+        self.xy = xy        
         self.wh = wh
+        self.center = xy + wh / 2
 
     def __repr__(self):
         return f'SVGRectangle(xy={self.xy} wh={self.wh})'
 
+    def translate(self, vec: Point):
+        # translate on center
+        self.center += vec
+        # recompute xy using center (center is invariant)
+        self.xy = self.center - self.wh / 2
+        return self
+    
+    def scale(self, factor: float | tuple[float, float]):
+        if isinstance(factor, tuple):
+            factor = Point(*factor)
+        self.wh = self.wh * factor
+        # recompute xy using center (center is invariant)
+        self.xy = self.center - self.wh / 2
+        return self
+    
     def to_str(self, *args, **kwargs):
         fill_attr = self._get_fill_attr()
         return f'<rect {fill_attr} x="{self.xy.x}" y="{self.xy.y}" width="{self.wh.x}" height="{self.wh.y}"/>'
