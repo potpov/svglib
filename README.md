@@ -9,11 +9,19 @@ Handy library to manipulate SVG files in Python. Extension of the original svgli
 
 **Currently under develpment.**
 
-New (or Fixed) Features:
+ ### Supported Primitives
+✅ Lines
+✅ Cubic Bezier
+
+### Supported Features
  ✅ Shifting
  ✅ Scaling on multiple dimensions
- ✅ Extracting Bounding boxes from any supported primitive
-  
+ ✅ Bounding boxes wrapping primitive
+ ✅ Colors
+ ✅ Filling
+
+
+Quadratic Bezier are converted into Cubic Bezier.
 
 ## Usage
 

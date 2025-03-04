@@ -24,23 +24,28 @@ class SVGPrimitive:
     """
     Reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Basic_Shapes
     """
-    def __init__(self, color="black", fill=False, dasharray=None, stroke_width="1.0", opacity=1., transf_matrix=None):
-        self.color = color
+    def __init__(self, stroke_color="black", filling_color="none", dasharray=None, stroke_width="1.0", opacity=1., transf_matrix=None):
+        self.stroke_color = stroke_color
+        self.filling_color = filling_color
         self.dasharray = dasharray
         self.stroke_width = stroke_width
         self.opacity = opacity
 
-        self.fill = fill
+        
         self.transf_matrix = transf_matrix
 
     def _get_fill_attr(self):
-        fill_attr = f'fill="{self.color}" fill-opacity="{self.opacity}"' if self.fill else f'fill="none" stroke="black" stroke-width="{self.stroke_width}" stroke-opacity="{self.opacity}"'
-        if self.dasharray is not None and not self.fill:
-            fill_attr += f' stroke-dasharray="{self.dasharray}"'
+        stroke_string = f'stroke-width="{self.stroke_width}"' if self.stroke_width else ''
+        fill_string = f'fill="{self.filling_color}"' if self.filling_color else ''
+        opacity_string = f'opacity="{self.opacity}"' if self.opacity != 1. else ''
+        stroke_color_string = f'stroke="{self.stroke_color}"' if self.stroke_color else ''
+        dash_string = f'stroke-dasharray="{self.dasharray}"' if self.dasharray else ''
+
+        fill_attr = ' '.join([stroke_string, fill_string, opacity_string, stroke_color_string, dash_string])
         return fill_attr
 
     def _get_transf_attr(self):
-        if self.transf_matrix is not None:
+        if self.transf_matrix:
             return f'transform="matrix({self.transf_matrix})"'
         return ""
 
