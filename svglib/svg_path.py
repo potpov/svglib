@@ -33,11 +33,11 @@ class Filling:
 
 
 class SVGPath:
-    def __init__(self, path_commands: List[SVGCommand] = None, origin: Point = None, closed=False, stroke_color: str = "black", filling=Filling.OUTLINE):
+    def __init__(self, path_commands: List[SVGCommand] = None, origin: Point = None, closed=False, stroke_color: str = "black", fill=None):
         self.origin = origin or Point(0.)
         self.path_commands = path_commands
         self.closed = closed
-        self.filling = filling
+        self.fill = fill
         self.stroke_color = stroke_color
 
     @property
@@ -56,8 +56,8 @@ class SVGPath:
         from .svg_primitive import SVGPathGroup
         return SVGPathGroup([self], *args, **kwargs)
 
-    def set_filling(self, filling=True):
-        self.filling = Filling.FILL if filling else Filling.ERASE
+    def set_fill(self, fill):
+        self.fill = fill
         return self
 
     def __len__(self):
@@ -74,7 +74,7 @@ class SVGPath:
         return [self.start_command, *self.path_commands, *close_cmd]
 
     def copy(self):
-        return SVGPath([path_command.copy() for path_command in self.path_commands], self.origin.copy(), self.closed, filling=self.filling)
+        return SVGPath([path_command.copy() for path_command in self.path_commands], self.origin.copy(), self.closed, fill=self.fill)
 
     @staticmethod
     def _tokenize_path(path_str):
@@ -94,14 +94,14 @@ class SVGPath:
 
         # if we do not fill and we have no stroke color, we outline it in black
         if not x.hasAttribute("fill"):
-            filling = None  # none
+            fill = None  # none
             stroke_color = "black" if not x.hasAttribute("stroke") else x.getAttribute("stroke")
         else:
-            filling = x.getAttribute("fill")
+            fill = x.getAttribute("fill")
             stroke_color = None if not x.hasAttribute("stroke") else x.getAttribute('stroke')
                  
         s = x.getAttribute('d')
-        return SVGPath.from_str(s, stroke_color=stroke_color, filling=filling, transf_matrix=transf_matrix, stroke_width=stroke_width)
+        return SVGPath.from_str(s, stroke_color=stroke_color, fill=fill, transf_matrix=transf_matrix, stroke_width=stroke_width)
 
     @staticmethod
     def from_str(s: str, **kwargs):
@@ -116,15 +116,11 @@ class SVGPath:
         # else:
 
     @staticmethod
-    def from_tensor(tensor: torch.Tensor, allow_empty=False, fill_mode:int = 0):
-        if(fill_mode!=0):
-            fill = True
-        else:
-            fill = False
-        return SVGPath.from_commands([SVGCommand.from_tensor(row) for row in tensor], allow_empty=allow_empty, fill=fill, filling=fill_mode)
+    def from_tensor(tensor: torch.Tensor, allow_empty=False, fill = None):
+        return SVGPath.from_commands([SVGCommand.from_tensor(row) for row in tensor], allow_empty=allow_empty, fill=fill)
 
     @staticmethod
-    def from_commands(path_commands: List[SVGCommand], stroke_color="black", filling=Filling.OUTLINE, add_closing=False, allow_empty=False, stroke_width=None, transf_matrix=None):
+    def from_commands(path_commands: List[SVGCommand], stroke_color="black", fill=None, add_closing=False, allow_empty=False, stroke_width=None, transf_matrix=None):
         from .svg_primitive import SVGPathGroup
 
         if not path_commands:
@@ -142,7 +138,7 @@ class SVGPath:
                         svg_path.path_commands.append(empty_command)
                     svg_paths.append(svg_path)
 
-                svg_path = SVGPath([], command.start_pos.copy(), stroke_color=stroke_color, filling=filling)
+                svg_path = SVGPath([], command.start_pos.copy(), stroke_color=stroke_color, fill=fill)
             else:
                 if svg_path is None:
                     # Ignore commands until the first moveTo commands
@@ -164,8 +160,8 @@ class SVGPath:
                 svg_path.path_commands.append(empty_command)
             svg_paths.append(svg_path)
 
-        filling_color= "none" if filling is None else filling
-        return SVGPathGroup(svg_paths, filling_color=filling, stroke_color=stroke_color, stroke_width=stroke_width, transf_matrix=transf_matrix)
+        fill= "none" if fill is None else fill
+        return SVGPathGroup(svg_paths, fill=fill, stroke_color=stroke_color, stroke_width=stroke_width, transf_matrix=transf_matrix)
         
 
     def __repr__(self):

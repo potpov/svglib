@@ -368,7 +368,7 @@ class SVGPathGroup(SVGPrimitive):
         fill_attr = self._get_fill_attr()
         transf = self._get_transf_attr()
         marker_attr = 'marker-start="url(#arrow)"' if with_markers else ''
-        return '<path {} {} fill="{}" d="{}" {}></path>'.format(fill_attr, marker_attr, self.path.fill,
+        return '<path {} {} d="{}" {}></path>'.format(fill_attr, marker_attr,
                                                    " ".join(svg_path.to_str() for svg_path in self.svg_paths), transf)
 
     def to_tensor(self, PAD_VAL=-1):
