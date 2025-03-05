@@ -75,8 +75,8 @@ class SVGPrimitive:
     def copy(self):
         return copy.deepcopy(self)
 
-    def bbox(self):
-        raise NotImplementedError
+    # def bbox(self):
+    #     raise NotImplementedError
 
     def fill_(self, fill=True):
         self.fill = fill
@@ -147,6 +147,9 @@ class SVGCircle(SVGEllipse):
         fill_attr = self._get_fill_attr()
         return f'<circle {fill_attr} cx="{self.center.x}" cy="{self.center.y}" r="{self.radius.x}"/>'
 
+    def bbox(self):
+        return Bbox(self.center - self.radius, self.center + self.radius)
+    
     @classmethod
     def from_xml(_, x: minidom.Element):
 
@@ -245,6 +248,9 @@ class SVGLine(SVGPrimitive):
         self.end_pos = self.end_pos * factor
         return self
     
+    # def bbox(self):
+    #     return self.to_path()  # not implemented directly, use commands.
+    
     def to_path(self):
         return SVGPath([SVGCommandLine(self.start_pos, self.end_pos)]).to_group(fill=self.fill)
 
@@ -341,7 +347,7 @@ class SVGPathGroup(SVGPrimitive):
 
     def copy(self):
         return SVGPathGroup([svg_path.copy() for svg_path in self.svg_paths], self.origin.copy(),
-                            self.color, self.fill, self.dasharray, self.stroke_width, self.opacity)
+                            self.stroke_color, self.fill, self.dasharray, self.stroke_width, self.opacity)
 
     def __repr__(self):
         return "SVGPathGroup({})".format(", ".join(svg_path.__repr__() for svg_path in self.svg_paths))

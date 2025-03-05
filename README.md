@@ -15,10 +15,11 @@ Handy library to manipulate SVG files in Python. Extension of the original svgli
 
 |              | Line | Quadratic | Cubic | Rect | Circle | Ellipse |
 |--------------|------|-----------|-------|------|--------|---------|
-| shift        | ✅    | ⌛         | ⌛     | ✅    | ✅      | ✅       |
-| scale        | ✅    | ⌛         | ⌛     | ✅    | ✅      | ✅       |
-| bounding box | ✅    | 🚫         | 🚫     | 🚫    | 🚫      | 🚫       |
-| copy         | ✅    | 🚫         | 🚫     | 🚫    | 🚫      | 🚫       |
+| shift        | ✅    | ✅         | ✅     | ✅    | ✅      | ✅       |
+| scale        | ✅    | ✅         | ✅     | ✅    | ✅      | ✅       |
+| bounding box | ✅    | ✅         | ✅     | 🚫    | 🚫      | 🚫       |
+| copy         | ✅    | ✅         | ✅     | 🚫    | 🚫      | 🚫       |
+| resize       | ✅    | ✅         | ✅     | ✅    | ✅      | ✅       |
 
 
 Quadratic Bezier are converted into Cubic Bezier according to the formula:

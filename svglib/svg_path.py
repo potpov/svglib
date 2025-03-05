@@ -167,7 +167,7 @@ class SVGPath:
     def __repr__(self):
         return "SVGPath({})".format(" ".join(command.__repr__() for command in self.all_commands()))
 
-    def to_str(self, fill=False):
+    def to_str(self, fill=False, with_markers=False):
         return " ".join(command.to_str() for command in self.all_commands())
 
     def to_tensor(self, PAD_VAL=-1):
@@ -642,6 +642,13 @@ class SVGPath:
         return self
 
     def bbox(self):
+        """
+        Returns the bounding box that wraps all the shapes of SVG
+        """
+        return union_bbox([cmd.bbox() for cmd in self.path_commands])
+        points = self.to_points()
+        (x1, y1), (x2, y2) = np.min(points, axis=0), np.max(points, axis=0)
+        return (x1, y1), (x2, y2)
         return union_bbox([cmd.bbox() for cmd in self.path_commands])
 
     def sample_points(self, max_dist=0.4):

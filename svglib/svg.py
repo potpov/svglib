@@ -133,8 +133,13 @@ class SVG:
         width = eval(svg_root.getAttribute("width"))
         height = eval(svg_root.getAttribute("height"))
 
-        viewbox_list = list(map(float, svg_root.getAttribute("viewBox").split(" ")))
-        view_box = Bbox(*viewbox_list)
+        try:
+            viewbox_list = list(map(float, svg_root.getAttribute("viewBox").split(" ")))
+            view_box = Bbox(*viewbox_list)
+        except:
+            print("WARNING: viewbox not found or processed in the SVG file"
+                  "Setting the viewbox to the width and height of the SVG")
+            view_box = Bbox(width, height)
 
         primitives = {
             "path": SVGPath,
@@ -153,6 +158,7 @@ class SVG:
 
     @staticmethod
     def from_tensor(tensor: torch.Tensor, viewbox: Bbox = None, allow_empty=False):
+        raise NotImplementedError("This function has to be checked.")
         if viewbox is None:
             viewbox = Bbox(24)
 
@@ -164,6 +170,7 @@ class SVG:
 
     @staticmethod
     def from_tensors(tensors: List[torch.Tensor], fill_list:List[int], viewbox: Bbox = None, allow_empty=False):
+        raise NotImplementedError("This function has to be checked.")
         if viewbox is None:
             viewbox = Bbox(24)
 
@@ -543,7 +550,16 @@ class SVG:
         """
         Returns the bounding box that wraps all the shapes of SVG
         """
-        points = self.to_points()
+        box = union_bbox([
+            path_group.bbox() if hasattr(path_group, "bbox") else path_group.to_path().bbox()
+            for path_group in self.svg_path_groups
+        ])
+        # box = union_bbox([path_group.to_path().bbox() for path_group in self.svg_path_groups])
+        x1, y1 = box.xy.pos
+        x2, y2 = (box.xy + box.wh).pos
+        return (x1, y1), (x2, y2)
+        points = np.concatenate([path_group.to_path().bbox() for path_group in self.svg_path_groups])
+        # points = self.to_points()
         (x1, y1), (x2, y2) = np.min(points, axis=0), np.max(points, axis=0)
         return (x1, y1), (x2, y2)
 
@@ -629,3 +645,17 @@ class SVG:
 
     def fill_(self, fill=True):
         return self._apply_to_paths("fill_", fill)
+
+    def resize(self, new_w, new_h):
+        sw = new_w / self.width
+        sh = new_h / self.height
+        self.scale((sw, sh))  # now it is in the right resolution but centered with respect to the previous viewbox
+
+        new_center = Point(new_w - self.width, new_h - self.height) / 2  # half the center 
+        self.translate(new_center)
+        
+        # update the settings
+        self.viewbox = Bbox(0, 0, new_w, new_h)
+        self.width = new_w
+        self.height = new_h
+        return self

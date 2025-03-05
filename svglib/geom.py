@@ -147,8 +147,8 @@ class Point(Geom):
         rot_m = get_rotation_matrix(angle)
         self.pos = rot_m @ self.pos
 
-    def scale(self, factor):
-        self.pos *= factor
+    def scale(self, factor: float | tuple[float, float]):
+        self.pos = self.pos * factor
 
     def dot(self, other: Point):
         return self.pos.dot(other.pos)

@@ -6,6 +6,9 @@ from enum import Enum
 import torch
 import math
 from typing import List, Union
+import copy
+from scipy.optimize import fsolve
+
 Num = Union[int, float]
 
 
@@ -45,7 +48,7 @@ class SVGCommand:
         self.end_pos = end_pos
 
     def copy(self):
-        raise NotImplementedError
+        return copy.deepcopy(self)
 
     @staticmethod
     def from_str(cmd_str: str, args_str: List[Num], pos=None, initial_pos=None, prev_command: SVGCommand = None):
@@ -206,7 +209,7 @@ class SVGCommand:
 
     def bbox(self):
         raise NotImplementedError
-
+    
 
 class SVGCommandLinear(SVGCommand):
     def __init__(self, *args, **kwargs):
