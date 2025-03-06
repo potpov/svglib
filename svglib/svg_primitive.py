@@ -107,6 +107,9 @@ class SVGEllipse(SVGPrimitive):
         self.radius = self.radius * factor
         return self
     
+    def bbox(self):
+        return Bbox(self.center - self.radius, self.center + self.radius)
+                    
     @classmethod
     def from_xml(_, x: minidom.Element):
         fill, stroke_color = extract_fill(x)
